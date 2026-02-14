@@ -2,12 +2,9 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-
-  <!-- Título que aparece na aba do navegador -->
-  <title>Estoque</title>
+  <title>Estoque - Beco da Capivara</title>
 
   <style>
-    /* ===== CONFIGURAÇÃO GERAL DA PÁGINA ===== */
     body {
       font-family: Arial, sans-serif;
       background: #f4efe6;
@@ -16,9 +13,9 @@
       padding: 20px;
     }
 
-    /* ===== LOGO ===== */
+    /* Logo da loja */
     .logo {
-      width: 180px; /* tamanho do logo */
+      width: 180px;
       margin-bottom: 10px;
     }
 
@@ -27,7 +24,7 @@
       margin-bottom: 20px;
     }
 
-    /* ===== CAMPO DE BUSCA ===== */
+    /* Campo de busca */
     input {
       padding: 12px;
       width: 60%;
@@ -38,7 +35,7 @@
       margin-bottom: 10px;
     }
 
-    /* ===== BOTÃO ===== */
+    /* Botão */
     button {
       padding: 10px 18px;
       border: none;
@@ -54,7 +51,7 @@
       background: #6f5636;
     }
 
-    /* ===== TABELA ===== */
+    /* Tabela */
     table {
       border-collapse: collapse;
       width: 95%;
@@ -79,44 +76,31 @@
     tr:hover {
       background: #f2f2f2;
     }
-
-    /* ===== TEXTO DE STATUS ===== */
-    .info {
-      margin-top: 10px;
-      color: #666;
-      font-size: 14px;
-    }
-
   </style>
 </head>
 
 <body>
 
-  <!-- ===== LOGO DA LOJA ===== -->
-  <!-- Aqui estamos usando a imagem que você enviou -->
+  <!-- Logo da loja -->
   <img 
     src="https://repositorio.sbrauble.com/arquivos/up/ecom/logo/66bd048d6905a-vst9m-fh70s-137376714966bd048d690ac.jpg" 
     alt="Beco da Capivara"
     class="logo"
   >
 
-  <h1>Estoque</h1>
+  <h1>Sistema de Estoque</h1>
 
-  <!-- ===== CAMPO DE PESQUISA ===== -->
+  <!-- Campo de pesquisa -->
   <input 
     type="text" 
     id="search" 
     placeholder="Digite coleção, carta ou sigla..."
   >
 
-  <!-- ===== BOTÃO PARA ATUALIZAR OS DADOS DA PLANILHA ===== -->
-  <!-- Quando clicar, chama a função carregarDados() -->
+  <!-- Botão atualizar dados -->
   <button onclick="carregarDados()">🔄 Atualizar Dados</button>
 
-  <!-- ===== TEXTO QUE MOSTRA STATUS ===== -->
-  <div class="info" id="info">Carregando dados...</div>
-
-  <!-- ===== TABELA DE RESULTADOS ===== -->
+  <!-- Tabela -->
   <table>
     <thead>
       <tr>
@@ -128,67 +112,42 @@
       </tr>
     </thead>
 
-    <!-- Corpo da tabela (onde os resultados aparecem) -->
     <tbody id="resultado"></tbody>
   </table>
 
 
   <script>
 
-    // =====================================================
-    // VARIÁVEL ONDE VAMOS GUARDAR OS DADOS DA PLANILHA
-    // =====================================================
+    // Onde vamos guardar os dados da planilha
     let dados = [];
 
 
-    // =====================================================
-    // FUNÇÃO QUE CARREGA OS DADOS DO GOOGLE SHEETS
-    // =====================================================
+    // Função para carregar dados do Google Sheets
     async function carregarDados() {
 
       try {
 
-        // Mensagem visual pro usuário
-        document.getElementById("info").innerText = "Atualizando dados...";
-
-        // Esse link é sua planilha publicada em CSV
-        // O "+ new Date().getTime()" serve pra evitar cache
-        // Ou seja: sempre pega dados novos
         const sheetURL =
           "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2nKjb-cdFfcP-IfcrriXeY5_m3h23_D_SYiT7iw_EfUol1mMMhwFrKeAjqSD93CCZJFE3cpvljTOu/pub?output=csv&t="
           + new Date().getTime();
 
-        // Busca os dados da internet
         const res = await fetch(sheetURL);
-
-        // Converte resposta em texto
         const texto = await res.text();
 
-        // Divide o CSV em linhas
         const linhas = texto.trim().split("\n");
 
-        // Remove o cabeçalho e transforma em array
         dados = linhas.slice(1).map(linha => linha.split(","));
 
-        // Atualiza mensagem
-        document.getElementById("info").innerText = "Dados atualizados ✅";
-
-        // Se já tiver algo digitado, atualiza resultados
+        // Atualiza resultados se já tiver algo digitado
         mostrarResultados();
 
       } catch (erro) {
-
-        console.error("Erro ao carregar:", erro);
-
-        document.getElementById("info").innerText =
-          "Erro ao carregar dados 😢";
+        console.error("Erro ao carregar dados:", erro);
       }
     }
 
 
-    // =====================================================
-    // FUNÇÃO DE BUSCA
-    // =====================================================
+    // Função de busca
     function mostrarResultados() {
 
       const termo = document
@@ -199,20 +158,14 @@
 
       const tbody = document.getElementById("resultado");
 
-      // Limpa resultados anteriores
       tbody.innerHTML = "";
 
-      // Se não digitou nada, não mostra nada
       if (termo === "") {
         return;
       }
 
-      let encontrados = 0;
-
-      // Percorre todas as linhas da planilha
       dados.forEach(linha => {
 
-        // Junta tudo em um texto só pra facilitar busca
         const textoLinha = linha.join(" ").toLowerCase();
 
         if (textoLinha.includes(termo)) {
@@ -228,32 +181,21 @@
           `;
 
           tbody.appendChild(tr);
-          encontrados++;
         }
       });
-
-      // Mostra quantidade encontrada
-      document.getElementById("info").innerText =
-        encontrados + " resultado(s) encontrado(s)";
     }
 
 
-    // =====================================================
-    // EVENTO: QUANDO DIGITA NO CAMPO
-    // =====================================================
+    // Evento quando digita
     document
       .getElementById("search")
       .addEventListener("input", mostrarResultados);
 
 
-    // =====================================================
-    // INICIA CARREGANDO A PLANILHA AO ABRIR O SITE
-    // =====================================================
+    // Carrega dados ao abrir o site
     carregarDados();
 
   </script>
 
 </body>
 </html>
-
-
