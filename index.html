@@ -106,49 +106,45 @@ Sistema interno da loja 🦫
 </div>
 
 <script>
-const dados = [
-  ["Pokemon","Charizard EX","Mega Evolução","Gaveta A3","2"],
-  ["Magic","Black Lotus","Alpha","Cofre","1"],
-  ["One Piece","Luffy","OP01","Pasta 2","3"]
-];
+const sheetURL = "COLE_AQUI_LINK_CSV";
 
-function badgeClasse(jogo) {
-  jogo = jogo.toLowerCase();
-  if(jogo.includes("pokemon")) return "pokemon";
-  if(jogo.includes("magic")) return "magic";
-  if(jogo.includes("one")) return "onepiece";
-  if(jogo.includes("digimon")) return "digimon";
-  if(jogo.includes("gundam")) return "gundam";
-  if(jogo.includes("rift")) return "riftbound";
-  if(jogo.includes("lorcana")) return "lorcana";
-  return "";
+async function carregarDados() {
+  const res = await fetch(sheetURL);
+  const texto = await res.text();
+
+  const linhas = texto.split("\n").slice(1); // remove cabeçalho
+  const dados = linhas.map(l => l.split(","));
+
+  mostrar(dados);
 }
 
-document.getElementById("search").addEventListener("input", function() {
-  const termo = this.value.toLowerCase();
+function mostrar(dados) {
   const tbody = document.getElementById("resultado");
   tbody.innerHTML = "";
+
+  const termo = document.getElementById("search").value.toLowerCase();
 
   dados.forEach(linha => {
     const texto = linha.join(" ").toLowerCase();
 
     if(texto.includes(termo)) {
-
-      const classe = badgeClasse(linha[0]);
-
       const tr = `<tr>
-        <td><span class="badge ${classe}">${linha[0]}</span></td>
-        <td>${linha[1]}</td>
-        <td>${linha[2]}</td>
-        <td>${linha[3]}</td>
-        <td>${linha[4]}</td>
+        <td>${linha[0] || ""}</td>
+        <td>${linha[1] || ""}</td>
+        <td>${linha[2] || ""}</td>
+        <td>${linha[4] || ""}</td>
+        <td>${linha[5] || ""}</td>
       </tr>`;
-
       tbody.innerHTML += tr;
     }
   });
-});
+}
+
+document.getElementById("search").addEventListener("input", carregarDados);
+
+carregarDados();
 </script>
 
 </body>
 </html>
+
