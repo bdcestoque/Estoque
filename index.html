@@ -72,7 +72,7 @@
   <!-- Campo de pesquisa -->
   <input type="text" id="search" placeholder="Digite coleção, carta ou sigla...">
 
-  <div class="info">Digite algo para pesquisar</div>
+  <div class="info" id="info">Digite algo para pesquisar</div>
 
   <!-- Tabela -->
   <table>
@@ -90,49 +90,64 @@
   </table>
 
   <script>
-    // ===== LINK DA SUA PLANILHA CSV =====
-    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2nKjb-cdFfcP-IfcrriXeY5_m3h23_D_SYiT7iw_EfUol1mMMhwFrKeAjqSD93CCZJFE3cpvljTOu/pub?output=csv";
+    // ===== LINK DA PLANILHA =====
+    // Esse truque do "+ new Date().getTime()" serve pra evitar cache.
+    // Assim o site sempre pega os dados mais recentes.
+    const sheetURL =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2nKjb-cdFfcP-IfcrriXeY5_m3h23_D_SYiT7iw_EfUol1mMMhwFrKeAjqSD93CCZJFE3cpvljTOu/pub?output=csv&t="
+      + new Date().getTime();
 
     let dados = [];
 
-    // ===== FUNÇÃO QUE CARREGA A PLANILHA =====
+    // ===== FUNÇÃO QUE CARREGA OS DADOS DA PLANILHA =====
     async function carregarDados() {
       try {
+        document.getElementById("info").innerText = "Carregando dados...";
+
         const res = await fetch(sheetURL);
         const texto = await res.text();
 
-        // Quebra o CSV em linhas
         const linhas = texto.trim().split("\n");
 
-        // Remove o cabeçalho
+        // Remove cabeçalho
         dados = linhas.slice(1).map(linha => linha.split(","));
+
+        document.getElementById("info").innerText =
+          "Digite algo para pesquisar";
 
       } catch (erro) {
         console.error("Erro ao carregar planilha:", erro);
+        document.getElementById("info").innerText =
+          "Erro ao carregar dados 😢";
       }
     }
 
     // ===== FUNÇÃO DE BUSCA =====
     function mostrarResultados() {
 
-      const termo = document.getElementById("search").value.toLowerCase().trim();
+      const termo = document
+        .getElementById("search")
+        .value
+        .toLowerCase()
+        .trim();
+
       const tbody = document.getElementById("resultado");
 
-      // Limpa a tabela antes de mostrar resultados
       tbody.innerHTML = "";
 
-      // Se campo estiver vazio, não mostra nada
+      // Se não digitou nada, não mostra resultados
       if (termo === "") {
+        document.getElementById("info").innerText =
+          "Digite algo para pesquisar";
         return;
       }
 
-      // Percorre todos os dados
+      let encontrados = 0;
+
       dados.forEach(linha => {
 
-        // Junta tudo da linha em um texto só para facilitar a busca
         const textoLinha = linha.join(" ").toLowerCase();
 
-        // Se encontrou o termo digitado
         if (textoLinha.includes(termo)) {
 
           const tr = document.createElement("tr");
@@ -146,14 +161,21 @@
           `;
 
           tbody.appendChild(tr);
+          encontrados++;
         }
       });
+
+      // Mensagem de quantidade encontrada
+      document.getElementById("info").innerText =
+        encontrados + " resultado(s) encontrado(s)";
     }
 
-    // ===== EVENTO DE DIGITAÇÃO =====
-    document.getElementById("search").addEventListener("input", mostrarResultados);
+    // ===== EVENTO QUANDO DIGITA =====
+    document
+      .getElementById("search")
+      .addEventListener("input", mostrarResultados);
 
-    // ===== INICIA CARREGANDO A PLANILHA =====
+    // ===== INICIA CARREGANDO PLANILHA =====
     carregarDados();
 
   </script>
