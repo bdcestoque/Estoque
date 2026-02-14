@@ -1,150 +1,201 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Estoque da Capivara 🦫</title>
+  <meta charset="UTF-8">
+  <title>Estoque BDC TCG</title>
 
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background: #f5efe6;
-  margin: 0;
-}
+  <!-- Fonte mais bonita -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
-.container {
-  max-width: 1000px;
-  margin: 40px auto;
-  background: white;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-}
+  <style>
+    /* ===== ESTILO GERAL DA PÁGINA ===== */
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f6f9fc, #e3f2fd);
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
 
-h1 {
-  text-align: center;
-  color: #6b4f3a;
-}
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
 
-input {
-  width: 100%;
-  padding: 14px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-}
+    /* Caixa principal */
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
+    /* Campo de busca */
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
 
-th {
-  background: #8b6b4a;
-  color: white;
-  padding: 12px;
-}
+    /* Tabela */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
 
-td {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-}
+    th {
+      background: #3498db;
+      color: white;
+      padding: 10px;
+      text-align: left;
+    }
 
-tr:hover {
-  background: #f2e8dc;
-}
+    td {
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+    }
 
-.badge {
-  padding: 4px 8px;
-  border-radius: 6px;
-  color: white;
-  font-size: 12px;
-}
+    tr:hover {
+      background: #f1f7ff;
+    }
 
-.pokemon { background: #ffcb05; color: black; }
-.magic { background: #b22222; }
-.onepiece { background: #1e90ff; }
-.digimon { background: #6a5acd; }
-.gundam { background: #2f4f4f; }
-.riftbound { background: #228b22; }
-.lorcana { background: #ff69b4; }
+    /* Badge de jogo */
+    .badge {
+      padding: 4px 8px;
+      border-radius: 6px;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
 
-footer {
-  text-align: center;
-  margin-top: 15px;
-  color: #777;
-}
-</style>
+    .pokemon { background: #e74c3c; }
+    .onepiece { background: #f39c12; }
+    .gundam { background: #9b59b6; }
+    .magic { background: #2ecc71; }
+    .digimon { background: #3498db; }
+    .lorcana { background: #1abc9c; }
+    .riftbound { background: #34495e; }
+
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #777;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="container">
+  <h1>🦫 BDC Estoque TCG</h1>
 
-<h1>🦫 Sistema de Estoque</h1>
+  <div class="container">
 
-<input type="text" id="search" placeholder="Buscar carta, coleção, jogo ou local...">
+    <!-- Campo de pesquisa -->
+    <input type="text" id="search" placeholder="Buscar carta ou jogo...">
 
-<table>
-<thead>
-<tr>
-<th>Jogo</th>
-<th>Carta</th>
-<th>Coleção</th>
-<th>Local</th>
-<th>Qtd</th>
-</tr>
-</thead>
+    <!-- Tabela onde os dados vão aparecer -->
+    <table id="tabela">
+      <thead>
+        <tr>
+          <th>Jogo</th>
+          <th>Nome</th>
+          <th>Quantidade</th>
+          <th>Preço</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
-<tbody id="resultado"></tbody>
-</table>
+  </div>
 
-<footer>
-Sistema interno da loja 🦫
-</footer>
-
-</div>
+  <footer>
+    Estoque atualizado automaticamente via Google Planilhas
+  </footer>
 
 <script>
-const sheetURL = "COLE_AQUI_LINK_CSV";
 
-async function carregarDados() {
-  const res = await fetch(sheetURL);
-  const texto = await res.text();
+  // ===== LINK DO CSV DA SUA PLANILHA =====
+  // Se um dia mudar a planilha, só trocar aqui
+  const urlCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2nKjb-cdFfcP-IfcrriXeY5_m3h23_D_SYiT7iw_EfUol1mMMhwFrKeAjqSD93CCZJFE3cpvljTOu/pub?output=csv";
 
-  const linhas = texto.split("\n").slice(1); // remove cabeçalho
-  const dados = linhas.map(l => l.split(","));
 
-  mostrar(dados);
-}
+  // ===== FUNÇÃO PRA PEGAR A COR DO JOGO =====
+  function corJogo(jogo) {
+    jogo = jogo.toLowerCase();
 
-function mostrar(dados) {
-  const tbody = document.getElementById("resultado");
-  tbody.innerHTML = "";
+    if (jogo.includes("pokemon")) return "pokemon";
+    if (jogo.includes("one piece")) return "onepiece";
+    if (jogo.includes("gundam")) return "gundam";
+    if (jogo.includes("magic")) return "magic";
+    if (jogo.includes("digimon")) return "digimon";
+    if (jogo.includes("lorcana")) return "lorcana";
+    if (jogo.includes("rift")) return "riftbound";
 
-  const termo = document.getElementById("search").value.toLowerCase();
+    return "";
+  }
 
-  dados.forEach(linha => {
-    const texto = linha.join(" ").toLowerCase();
 
-    if(texto.includes(termo)) {
-      const tr = `<tr>
-        <td>${linha[0] || ""}</td>
-        <td>${linha[1] || ""}</td>
-        <td>${linha[2] || ""}</td>
-        <td>${linha[4] || ""}</td>
-        <td>${linha[5] || ""}</td>
-      </tr>`;
-      tbody.innerHTML += tr;
-    }
+  // ===== CARREGAR PLANILHA =====
+  fetch(urlCSV)
+    .then(response => response.text())
+    .then(csv => {
+
+      // Quebra o CSV em linhas
+      const linhas = csv.split("\n").slice(1);
+
+      const tbody = document.querySelector("#tabela tbody");
+
+      linhas.forEach(linha => {
+
+        // Divide colunas
+        const colunas = linha.split(",");
+
+        if (colunas.length < 4) return;
+
+        const jogo = colunas[0];
+        const nome = colunas[1];
+        const qtd = colunas[2];
+        const preco = colunas[3];
+
+        const classe = corJogo(jogo);
+
+        // Cria linha HTML
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td><span class="badge ${classe}">${jogo}</span></td>
+          <td>${nome}</td>
+          <td>${qtd}</td>
+          <td>R$ ${preco}</td>
+        `;
+
+        tbody.appendChild(tr);
+
+      });
+
+    });
+
+
+  // ===== BUSCA =====
+  document.getElementById("search").addEventListener("keyup", function () {
+
+    const filtro = this.value.toLowerCase();
+    const linhas = document.querySelectorAll("#tabela tbody tr");
+
+    linhas.forEach(linha => {
+      const texto = linha.innerText.toLowerCase();
+      linha.style.display = texto.includes(filtro) ? "" : "none";
+    });
+
   });
-}
 
-document.getElementById("search").addEventListener("input", carregarDados);
-
-carregarDados();
 </script>
 
 </body>
 </html>
-
