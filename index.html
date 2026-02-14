@@ -24,7 +24,22 @@
       border-radius: 10px;
       border: 1px solid #ccc;
       font-size: 16px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      background: #8b6f47;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    button:hover {
+      background: #6f5636;
     }
 
     table {
@@ -34,6 +49,7 @@
       background: white;
       border-radius: 10px;
       overflow: hidden;
+      margin-top: 20px;
     }
 
     th {
@@ -72,7 +88,10 @@
   <!-- Campo de pesquisa -->
   <input type="text" id="search" placeholder="Digite coleção, carta ou sigla...">
 
-  <div class="info" id="info">Digite algo para pesquisar</div>
+  <!-- Botão atualizar -->
+  <button onclick="carregarDados()">🔄 Atualizar Dados</button>
+
+  <div class="info" id="info">Carregando dados...</div>
 
   <!-- Tabela -->
   <table>
@@ -90,33 +109,38 @@
   </table>
 
   <script>
-    // ===== LINK DA PLANILHA =====
-    // Esse truque do "+ new Date().getTime()" serve pra evitar cache.
-    // Assim o site sempre pega os dados mais recentes.
-    const sheetURL =
-      "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2nKjb-cdFfcP-IfcrriXeY5_m3h23_D_SYiT7iw_EfUol1mMMhwFrKeAjqSD93CCZJFE3cpvljTOu/pub?output=csv&t="
-      + new Date().getTime();
 
     let dados = [];
 
-    // ===== FUNÇÃO QUE CARREGA OS DADOS DA PLANILHA =====
+    // ===== FUNÇÃO QUE CARREGA OS DADOS =====
     async function carregarDados() {
+
       try {
-        document.getElementById("info").innerText = "Carregando dados...";
+
+        document.getElementById("info").innerText = "Atualizando dados...";
+
+        // Link com anti-cache
+        const sheetURL =
+          "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2nKjb-cdFfcP-IfcrriXeY5_m3h23_D_SYiT7iw_EfUol1mMMhwFrKeAjqSD93CCZJFE3cpvljTOu/pub?output=csv&t="
+          + new Date().getTime();
 
         const res = await fetch(sheetURL);
         const texto = await res.text();
 
         const linhas = texto.trim().split("\n");
 
-        // Remove cabeçalho
         dados = linhas.slice(1).map(linha => linha.split(","));
 
         document.getElementById("info").innerText =
-          "Digite algo para pesquisar";
+          "Dados atualizados ✅";
+
+        // Atualiza resultados se já tiver algo digitado
+        mostrarResultados();
 
       } catch (erro) {
-        console.error("Erro ao carregar planilha:", erro);
+
+        console.error("Erro:", erro);
+
         document.getElementById("info").innerText =
           "Erro ao carregar dados 😢";
       }
@@ -135,10 +159,7 @@
 
       tbody.innerHTML = "";
 
-      // Se não digitou nada, não mostra resultados
       if (termo === "") {
-        document.getElementById("info").innerText =
-          "Digite algo para pesquisar";
         return;
       }
 
@@ -165,17 +186,18 @@
         }
       });
 
-      // Mensagem de quantidade encontrada
-      document.getElementById("info").innerText =
-        encontrados + " resultado(s) encontrado(s)";
+      if (termo !== "") {
+        document.getElementById("info").innerText =
+          encontrados + " resultado(s) encontrado(s)";
+      }
     }
 
-    // ===== EVENTO QUANDO DIGITA =====
+    // ===== EVENTO DIGITAÇÃO =====
     document
       .getElementById("search")
       .addEventListener("input", mostrarResultados);
 
-    // ===== INICIA CARREGANDO PLANILHA =====
+    // ===== CARREGA AO ABRIR =====
     carregarDados();
 
   </script>
