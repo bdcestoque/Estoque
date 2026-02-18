@@ -150,7 +150,7 @@ async function carregarDados() {
   try {
 
     const sheetURL =
-      "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2nKjb-cdFfcP-IfcrriXeY5_m3h23_D_SYiT7iw_EfUol1mMMhwFrKeAjqSD93CCZJFE3cpvljTOu/pub?output=csv&t="
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2nKjb-cdFfcP-IfcrriXeY5_m3h23_D_SYiT7iw_EfUol1mMMhwFrKeAjqSD93CCZJFE3cpvljTOu/pub?output=csv"
       + new Date().getTime();
 
     const res = await fetch(sheetURL);
@@ -224,3 +224,4 @@ carregarDados();
 
 </body>
 </html>
+
