@@ -13,7 +13,6 @@
       padding: 20px;
     }
 
-    /* Logo da loja */
     .logo {
       width: 180px;
       margin-bottom: 10px;
@@ -24,7 +23,6 @@
       margin-bottom: 20px;
     }
 
-    /* Campo de busca */
     input {
       padding: 12px;
       width: 60%;
@@ -35,7 +33,6 @@
       margin-bottom: 10px;
     }
 
-    /* Botão */
     button {
       padding: 10px 18px;
       border: none;
@@ -51,15 +48,15 @@
       background: #6f5636;
     }
 
-    /* Tabela */
     table {
       border-collapse: collapse;
-      width: 95%;
+      width: 98%;
       margin: auto;
       background: white;
       border-radius: 10px;
       overflow: hidden;
       margin-top: 20px;
+      font-size: 14px;
     }
 
     th {
@@ -76,12 +73,16 @@
     tr:hover {
       background: #f2f2f2;
     }
+
+    td:last-child {
+      text-align: left;
+      max-width: 250px;
+    }
   </style>
 </head>
 
 <body>
 
-  <!-- Logo da loja -->
   <img 
     src="https://repositorio.sbrauble.com/arquivos/up/ecom/logo/66bd048d6905a-vst9m-fh70s-137376714966bd048d690ac.jpg" 
     alt="Beco da Capivara"
@@ -90,112 +91,114 @@
 
   <h1>Sistema de Estoque</h1>
 
-  <!-- Campo de pesquisa -->
   <input 
     type="text" 
     id="search" 
-    placeholder="Digite coleção, carta ou sigla..."
+    placeholder="Digite jogo, carta, coleção, sigla, local ou observação..."
   >
 
-  <!-- Botão atualizar dados -->
   <button onclick="carregarDados()">🔄 Atualizar Dados</button>
 
-  <!-- Tabela -->
   <table>
     <thead>
       <tr>
         <th>Jogo</th>
         <th>Carta</th>
         <th>Coleção</th>
+        <th>Sigla</th>
         <th>Local</th>
         <th>Quantidade</th>
+        <th>Observações</th>
       </tr>
     </thead>
 
     <tbody id="resultado"></tbody>
   </table>
 
+<script>
 
-  <script>
+let dados = [];
 
-    // Onde vamos guardar os dados da planilha
-    let dados = [];
+async function carregarDados() {
 
+  try {
 
-    // Função para carregar dados do Google Sheets
-    async function carregarDados() {
+    const sheetURL =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2nKjb-cdFfcP-IfcrriXeY5_m3h23_D_SYiT7iw_EfUol1mMMhwFrKeAjqSD93CCZJFE3cpvljTOu/pub?output=csv&t="
+      + new Date().getTime();
 
-      try {
+    const res = await fetch(sheetURL);
+    const texto = await res.text();
 
-        const sheetURL =
-          "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2nKjb-cdFfcP-IfcrriXeY5_m3h23_D_SYiT7iw_EfUol1mMMhwFrKeAjqSD93CCZJFE3cpvljTOu/pub?output=csv&t="
-          + new Date().getTime();
+    const linhas = texto.trim().split("\n");
 
-        const res = await fetch(sheetURL);
-        const texto = await res.text();
+    dados = linhas.slice(1).map(linha => linha.split(","));
 
-        const linhas = texto.trim().split("\n");
+    mostrarResultados();
 
-        dados = linhas.slice(1).map(linha => linha.split(","));
+  } catch (erro) {
+    console.error("Erro ao carregar dados:", erro);
+  }
+}
 
-        // Atualiza resultados se já tiver algo digitado
-        mostrarResultados();
+function mostrarResultados() {
 
-      } catch (erro) {
-        console.error("Erro ao carregar dados:", erro);
-      }
+  const termo = document
+    .getElementById("search")
+    .value
+    .toLowerCase()
+    .trim();
+
+  const tbody = document.getElementById("resultado");
+
+  tbody.innerHTML = "";
+
+  if (termo === "") return;
+
+  dados.forEach(linha => {
+
+    const jogo = (linha[0] || "").toLowerCase();
+    const carta = (linha[1] || "").toLowerCase();
+    const colecao = (linha[2] || "").toLowerCase();
+    const sigla = (linha[3] || "").toLowerCase();
+    const local = (linha[4] || "").toLowerCase();
+    const quantidade = linha[5] || "";
+    const observacoes = (linha[6] || "").toLowerCase();
+
+    if (
+      jogo.includes(termo) ||
+      carta.includes(termo) ||
+      colecao.includes(termo) ||
+      sigla.includes(termo) ||
+      local.includes(termo) ||
+      observacoes.includes(termo)
+    ) {
+
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${linha[0] || ""}</td>
+        <td>${linha[1] || ""}</td>
+        <td>${linha[2] || ""}</td>
+        <td>${linha[3] || ""}</td>
+        <td>${linha[4] || ""}</td>
+        <td>${quantidade}</td>
+        <td>${linha[6] || ""}</td>
+      `;
+
+      tbody.appendChild(tr);
     }
 
+  });
+}
 
-    // Função de busca
-    function mostrarResultados() {
+document
+  .getElementById("search")
+  .addEventListener("input", mostrarResultados);
 
-      const termo = document
-        .getElementById("search")
-        .value
-        .toLowerCase()
-        .trim();
+carregarDados();
 
-      const tbody = document.getElementById("resultado");
-
-      tbody.innerHTML = "";
-
-      if (termo === "") {
-        return;
-      }
-
-      dados.forEach(linha => {
-
-        const textoLinha = linha.join(" ").toLowerCase();
-
-        if (textoLinha.includes(termo)) {
-
-          const tr = document.createElement("tr");
-
-          tr.innerHTML = `
-            <td>${linha[0] || ""}</td>
-            <td>${linha[1] || ""}</td>
-            <td>${linha[2] || ""}</td>
-            <td>${linha[4] || ""}</td>
-            <td>${linha[5] || ""}</td>
-          `;
-
-          tbody.appendChild(tr);
-        }
-      });
-    }
-
-
-    // Evento quando digita
-    document
-      .getElementById("search")
-      .addEventListener("input", mostrarResultados);
-
-
-    // Carrega dados ao abrir o site
-    carregarDados();
-
-  </script>
+</script>
 
 </body>
 </html>
