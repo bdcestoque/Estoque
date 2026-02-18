@@ -50,7 +50,7 @@
 
     table {
       border-collapse: collapse;
-      width: 98%;
+      width: 100%;
       margin: auto;
       background: white;
       border-radius: 10px;
@@ -74,9 +74,10 @@
       background: #f2f2f2;
     }
 
-    td:last-child {
-      text-align: left;
-      max-width: 250px;
+    .msg-vazio {
+      margin-top: 20px;
+      color: #6b4f2a;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -94,7 +95,7 @@
   <input 
     type="text" 
     id="search" 
-    placeholder="Digite jogo, carta, coleção, sigla, local ou observação..."
+    placeholder="Buscar jogo, carta, coleção, sigla, local ou observação..."
   >
 
   <button onclick="carregarDados()">🔄 Atualizar Dados</button>
@@ -115,12 +116,37 @@
     <tbody id="resultado"></tbody>
   </table>
 
+  <div id="mensagem" class="msg-vazio"></div>
+
 <script>
 
 let dados = [];
 
-async function carregarDados() {
+// Função para parsear CSV corretamente (suporta vírgulas dentro de aspas)
+function parseCSV(text) {
+  const linhas = [];
+  const regex = /(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|([^\",]+)|)(?:,|\n|\r\n?)/g;
 
+  let linha = [];
+  let match;
+
+  while ((match = regex.exec(text))) {
+    if (match[1] !== undefined) {
+      linha.push(match[1].replace(/\"\"/g, "\""));
+    } else {
+      linha.push(match[2] || "");
+    }
+
+    if (text[regex.lastIndex - 1] === "\n") {
+      linhas.push(linha);
+      linha = [];
+    }
+  }
+
+  return linhas;
+}
+
+async function carregarDados() {
   try {
 
     const sheetURL =
@@ -130,9 +156,9 @@ async function carregarDados() {
     const res = await fetch(sheetURL);
     const texto = await res.text();
 
-    const linhas = texto.trim().split("\n");
+    const linhas = parseCSV(texto);
 
-    dados = linhas.slice(1).map(linha => linha.split(","));
+    dados = linhas.slice(1); // remove cabeçalho
 
     mostrarResultados();
 
@@ -150,29 +176,20 @@ function mostrarResultados() {
     .trim();
 
   const tbody = document.getElementById("resultado");
+  const mensagem = document.getElementById("mensagem");
 
   tbody.innerHTML = "";
+  mensagem.innerHTML = "";
 
   if (termo === "") return;
 
+  let encontrados = 0;
+
   dados.forEach(linha => {
 
-    const jogo = (linha[0] || "").toLowerCase();
-    const carta = (linha[1] || "").toLowerCase();
-    const colecao = (linha[2] || "").toLowerCase();
-    const sigla = (linha[3] || "").toLowerCase();
-    const local = (linha[4] || "").toLowerCase();
-    const quantidade = linha[5] || "";
-    const observacoes = (linha[6] || "").toLowerCase();
+    const textoCompleto = linha.join(" ").toLowerCase();
 
-    if (
-      jogo.includes(termo) ||
-      carta.includes(termo) ||
-      colecao.includes(termo) ||
-      sigla.includes(termo) ||
-      local.includes(termo) ||
-      observacoes.includes(termo)
-    ) {
+    if (textoCompleto.includes(termo)) {
 
       const tr = document.createElement("tr");
 
@@ -182,14 +199,19 @@ function mostrarResultados() {
         <td>${linha[2] || ""}</td>
         <td>${linha[3] || ""}</td>
         <td>${linha[4] || ""}</td>
-        <td>${quantidade}</td>
+        <td>${linha[5] || ""}</td>
         <td>${linha[6] || ""}</td>
       `;
 
       tbody.appendChild(tr);
+      encontrados++;
     }
 
   });
+
+  if (encontrados === 0) {
+    mensagem.innerHTML = "Nenhum resultado encontrado.";
+  }
 }
 
 document
