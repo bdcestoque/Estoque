@@ -1,170 +1,163 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Estoque - Beco da Capivara</title>
+<meta charset="UTF-8">
+<title>Estoque - Beco da Capivara</title>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4efe6;
-      text-align: center;
-      margin: 0;
-      padding: 20px;
-    }
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    .logo {
-      width: 180px;
-      margin-bottom: 10px;
-    }
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f4efe6;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+}
 
-    h1 {
-      color: #6b4f2a;
-      margin-bottom: 20px;
-    }
+.logo {
+  width: 180px;
+  margin-bottom: 10px;
+}
 
-    input {
-      padding: 12px;
-      width: 60%;
-      max-width: 400px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
+h1 {
+  color: #6b4f2a;
+  margin-bottom: 20px;
+}
 
-    button {
-      padding: 10px 18px;
-      border: none;
-      border-radius: 8px;
-      background: #8b6f47;
-      color: white;
-      font-size: 14px;
-      cursor: pointer;
-      margin-left: 10px;
-    }
+input {
+  padding: 12px;
+  width: 60%;
+  max-width: 400px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
 
-    button:hover {
-      background: #6f5636;
-    }
+button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #8b6f47;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  margin-left: 10px;
+}
 
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin: auto;
-      background: white;
-      border-radius: 10px;
-      overflow: hidden;
-      margin-top: 20px;
-      font-size: 14px;
-    }
+button:hover {
+  background: #6f5636;
+}
 
-    th {
-      background: #8b6f47;
-      color: white;
-      padding: 10px;
-    }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: auto;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 20px;
+  font-size: 14px;
+}
 
-    td {
-      padding: 8px;
-      border-bottom: 1px solid #ddd;
-    }
+th {
+  background: #8b6f47;
+  color: white;
+  padding: 10px;
+}
 
-    tr:hover {
-      background: #f2f2f2;
-    }
+td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
 
-    .msg-vazio {
-      margin-top: 20px;
-      color: #6b4f2a;
-      font-weight: bold;
-    }
-  </style>
+tr:hover {
+  background: #f2f2f2;
+}
+
+.msg-vazio {
+  margin-top: 20px;
+  color: #6b4f2a;
+  font-weight: bold;
+}
+
+.loading {
+  margin-top: 15px;
+  color: #6b4f2a;
+}
+</style>
+
 </head>
-
 <body>
 
-  <img 
-    src="https://repositorio.sbrauble.com/arquivos/up/ecom/logo/66bd048d6905a-vst9m-fh70s-137376714966bd048d690ac.jpg" 
-    alt="Beco da Capivara"
-    class="logo"
-  >
+<img 
+  src="https://repositorio.sbrauble.com/arquivos/up/ecom/logo/66bd048d6905a-vst9m-fh70s-137376714966bd048d690ac.jpg" 
+  alt="Beco da Capivara"
+  class="logo"
+>
 
-  <h1>Sistema de Estoque</h1>
+<h1>Sistema de Estoque</h1>
 
-  <input 
-    type="text" 
-    id="search" 
-    placeholder="Buscar jogo, carta, coleção, sigla, local ou observação..."
-  >
+<input 
+  type="text" 
+  id="search" 
+  placeholder="Buscar jogo, carta, coleção, sigla, local ou observação..."
+>
 
-  <button onclick="carregarDados()">🔄 Atualizar Dados</button>
+<button onclick="carregarDados()">🔄 Atualizar Dados</button>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Jogo</th>
-        <th>Carta</th>
-        <th>Coleção</th>
-        <th>Sigla</th>
-        <th>Local</th>
-        <th>Quantidade</th>
-        <th>Observações</th>
-      </tr>
-    </thead>
+<div id="loading" class="loading"></div>
 
-    <tbody id="resultado"></tbody>
-  </table>
+<table>
+<thead>
+<tr>
+  <th>Jogo</th>
+  <th>Carta</th>
+  <th>Coleção</th>
+  <th>Sigla</th>
+  <th>Local</th>
+  <th>Quantidade</th>
+  <th>Observações</th>
+</tr>
+</thead>
+<tbody id="resultado"></tbody>
+</table>
 
-  <div id="mensagem" class="msg-vazio"></div>
+<div id="mensagem" class="msg-vazio"></div>
+
+<!-- PapaParse -->
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <script>
 
 let dados = [];
 
-// Função para parsear CSV corretamente (suporta vírgulas dentro de aspas)
-function parseCSV(text) {
-  const linhas = [];
-  const regex = /(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|([^\",]+)|)(?:,|\n|\r\n?)/g;
+const sheetURLBase =
+"https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2nKjb-cdFfcP-IfcrriXeY5_m3h23_D_SYiT7iw_EfUol1mMMhwFrKeAjqSD93CCZJFE3cpvljTOu/pub?output=csv";
 
-  let linha = [];
-  let match;
+function carregarDados() {
 
-  while ((match = regex.exec(text))) {
-    if (match[1] !== undefined) {
-      linha.push(match[1].replace(/\"\"/g, "\""));
-    } else {
-      linha.push(match[2] || "");
+  document.getElementById("loading").innerText = "Carregando dados...";
+  document.getElementById("mensagem").innerText = "";
+
+  const sheetURL = sheetURLBase + "&t=" + new Date().getTime();
+
+  Papa.parse(sheetURL, {
+    download: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+
+      dados = results.data.slice(1); // remove cabeçalho
+      document.getElementById("loading").innerText = "";
+      mostrarResultados();
+    },
+    error: function(err) {
+      document.getElementById("loading").innerText = "";
+      document.getElementById("mensagem").innerText = "Erro ao carregar dados.";
+      console.error(err);
     }
-
-    if (text[regex.lastIndex - 1] === "\n") {
-      linhas.push(linha);
-      linha = [];
-    }
-  }
-
-  return linhas;
-}
-
-async function carregarDados() {
-  try {
-
-    const sheetURL =
-      "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2nKjb-cdFfcP-IfcrriXeY5_m3h23_D_SYiT7iw_EfUol1mMMhwFrKeAjqSD93CCZJFE3cpvljTOu/pub?output=csv"
-      + new Date().getTime();
-
-    const res = await fetch(sheetURL);
-    const texto = await res.text();
-
-    const linhas = parseCSV(texto);
-
-    dados = linhas.slice(1); // remove cabeçalho
-
-    mostrarResultados();
-
-  } catch (erro) {
-    console.error("Erro ao carregar dados:", erro);
-  }
+  });
 }
 
 function mostrarResultados() {
@@ -181,15 +174,13 @@ function mostrarResultados() {
   tbody.innerHTML = "";
   mensagem.innerHTML = "";
 
-  if (termo === "") return;
-
   let encontrados = 0;
 
   dados.forEach(linha => {
 
     const textoCompleto = linha.join(" ").toLowerCase();
 
-    if (textoCompleto.includes(termo)) {
+    if (termo === "" || textoCompleto.includes(termo)) {
 
       const tr = document.createElement("tr");
 
@@ -215,13 +206,13 @@ function mostrarResultados() {
 }
 
 document
-  .getElementById("search")
-  .addEventListener("input", mostrarResultados);
+.getElementById("search")
+.addEventListener("input", mostrarResultados);
 
+// Carrega automaticamente ao abrir
 carregarDados();
 
 </script>
 
 </body>
 </html>
-
